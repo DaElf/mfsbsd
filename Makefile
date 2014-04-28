@@ -71,7 +71,7 @@ SYSCTL=/sbin/sysctl
 PKG=/usr/local/sbin/pkg
 #
 CURDIR!=${PWD}
-WRKDIR?=${CURDIR}/tmp
+WRKDIR?=${CURDIR}/work
 #
 BSDLABEL=bsdlabel
 #
@@ -141,7 +141,7 @@ KERNELFILE?=${BASE}/kernels/generic.??
 _MAKEJOBS=	-j${MAKEJOBS}
 .endif
 
-_ROOTDIR=	${WRKDIR}/mfs
+_ROOTDIR=	${WRKDIR}/freebsd
 _BOOTDIR=	${_ROOTDIR}/boot
 .if defined(ROOTHACK)
 _DESTDIR=	${_ROOTDIR}/rw
@@ -174,10 +174,12 @@ all: image
 
 destdir: ${_DESTDIR} ${_BOOTDIR}
 ${_DESTDIR}:
-	${_v}${MKDIR} ${_DESTDIR} && ${CHOWN} root:wheel ${_DESTDIR}
+	${MKDIR} ${_DESTDIR}
+	${CHOWN} root:wheel ${_DESTDIR}
 
 ${_BOOTDIR}:
-	${_v}${MKDIR} ${_BOOTDIR}/kernel ${_BOOTDIR}/modules && ${CHOWN} -R root:wheel ${_BOOTDIR}
+	${MKDIR} ${_BOOTDIR}/kernel ${_BOOTDIR}/modules
+	${CHOWN} -R root:wheel ${_BOOTDIR}
 
 extract: destdir ${WRKDIR}/.extract_done
 ${WRKDIR}/.extract_done:
@@ -198,14 +200,14 @@ ${WRKDIR}/.extract_done:
 		fi \
 	done
 .endif
-	@echo -n "Extracting base and kernel ..."
-	${_v}${CAT} ${BASEFILE} | ${TAR} --unlink -xpzf - -C ${_DESTDIR}
+	@echo "Extracting base and kernel ..."
+	${TAR} --unlink -xpf ${BASEFILE} -C ${_DESTDIR}
 .if !defined(FREEBSD9)
 	${_v}${CAT} ${KERNELFILE} | ${TAR} --unlink -xpzf - -C ${_BOOTDIR}
 	${_v}${MV} ${_BOOTDIR}/${KERNCONF}/* ${_BOOTDIR}/kernel
 	${_v}${RMDIR} ${_BOOTDIR}/${KERNCONF}
 .else
-	${_v}${CAT} ${KERNELFILE} | ${TAR} --unlink -xpzf - -C ${_ROOTDIR}
+	[ -f ${KERNELFILE} ] && ${TAR} --unlink -xpzf ${KERNELFILE} -C ${_ROOTDIR}
 .endif
 	@echo " done"
 .endif
@@ -406,11 +408,11 @@ ${WRKDIR}/.config_done:
 
 genkeys: config ${WRKDIR}/.genkeys_done
 ${WRKDIR}/.genkeys_done:
-	@echo -n "Generating SSH host keys ..."
-	${_v}${SSHKEYGEN} -t rsa1 -b 1024 -f ${_DESTDIR}/etc/ssh/ssh_host_key -N '' > /dev/null
-	${_v}${SSHKEYGEN} -t dsa -f ${_DESTDIR}/etc/ssh/ssh_host_dsa_key -N '' > /dev/null
-	${_v}${SSHKEYGEN} -t rsa -f ${_DESTDIR}/etc/ssh/ssh_host_rsa_key -N '' > /dev/null
-	${_v}${TOUCH} ${WRKDIR}/.genkeys_done
+	@echo "Generating SSH host keys ..."
+	${SSHKEYGEN} -t rsa1 -b 1024 -f ${_DESTDIR}/etc/ssh/ssh_host_key -N ''
+	${SSHKEYGEN} -t dsa -f ${_DESTDIR}/etc/ssh/ssh_host_dsa_key -N ''
+	${SSHKEYGEN} -t rsa -f ${_DESTDIR}/etc/ssh/ssh_host_rsa_key -N ''
+	${TOUCH} ${WRKDIR}/.genkeys_done
 	@echo " done"
 
 customfiles: config ${WRKDIR}/.customfiles_done
@@ -464,21 +466,21 @@ ${WRKDIR}/.boot_done:
 .endfor
 	${_v}${RM} -rf ${WRKDIR}/disk/boot/kernel/*.ko ${WRKDIR}/disk/boot/kernel/*.symbols
 .if defined(DEBUG)
-	${_v}test -f ${_BOOTDIR}/kernel/kernel.symbols \
-	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/kernel.symbols ${WRKDIR}/disk/boot/kernel >/dev/null 2>/dev/null || exit 0
+	-test -f ${_BOOTDIR}/kernel/kernel.symbols \
+	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/kernel.symbols ${WRKDIR}/disk/boot/kernel
 .endif
 .for FILE in ${BOOTMODULES}
-	${_v}test -f ${_BOOTDIR}/kernel/${FILE}.ko \
-	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko ${WRKDIR}/disk/boot/kernel >/dev/null 2>/dev/null || exit 0
+	-test -f ${_BOOTDIR}/kernel/${FILE}.ko \
+	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko ${WRKDIR}/disk/boot/kernel
 . if defined(DEBUG)
-	${_v}test -f ${_BOOTDIR}/kernel/${FILE}.ko \
-	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko.symbols ${WRKDIR}/disk/boot/kernel >/dev/null 2>/dev/null || exit 0
+	-test -f ${_BOOTDIR}/kernel/${FILE}.ko \
+	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko.symbols ${WRKDIR}/disk/boot/kernel
 . endif
 .endfor
 	${_v}${MKDIR} -p ${_DESTDIR}/boot/modules
 .for FILE in ${MFSMODULES}
-	${_v}test -f ${_BOOTDIR}/kernel/${FILE}.ko \
-	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko ${_DESTDIR}/boot/modules >/dev/null 2>/dev/null || exit 0
+	-test -f ${_BOOTDIR}/kernel/${FILE}.ko \
+	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko ${_DESTDIR}/boot/modules
 . if defined(DEBUG)
 	${_v}test -f ${_BOOTDIR}/kernel/${FILE}.ko.symbols \
 	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko.symbols ${_DESTDIR}/boot/modules >/dev/null 2>/dev/null || exit 0
@@ -538,6 +540,9 @@ ${IMAGE}:
 	@echo " done"
 	${_v}${LS} -l ${.TARGET}
 
+disk.img:
+	sh ./tools/do_gpt.sh  ${WRKDIR}/disk.img ${WRKDIR} ${WRKDIR}/mnt ${WRKDIR}/disk 0 
+
 gce: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist ${IMAGE} ${GCEFILE}
 ${GCEFILE}:
 	@echo -n "Creating GCE-compatible tarball..."
@@ -556,7 +561,7 @@ ${ISOIMAGE}:
 . if !exists(${MKISOFS})
 	@echo "${MKISOFS} is missing, please install sysutils/cdrtools first"; exit 1
 . else
-	${_v}${MKISOFS} -b boot/cdboot -no-emul-boot -r -J -V mfsBSD -o ${ISOIMAGE} ${WRKDIR}/disk > /dev/null 2> /dev/null
+	${MKISOFS} -b boot/cdboot -no-emul-boot -r -J -V mfsBSD -o ${ISOIMAGE} ${WRKDIR}/disk
 . endif
 .else
 	${_v}${MAKEFS} -t cd9660 -o rockridge,bootimage=i386\;/boot/cdboot,no-emul-boot,label=mfsBSD ${ISOIMAGE} ${WRKDIR}/disk
