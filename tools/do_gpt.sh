@@ -1,6 +1,9 @@
 #!/bin/sh
 #
-set -e
+# $FreeBSD: src/release/scripts/doFS.sh,v 1.60 2004/08/25 01:39:52 kensmith Exp $
+#
+
+set -ex
 
 FSIMG=$1
 FSPROTO=$2
@@ -35,6 +38,7 @@ if [ ${FSSIZE} -eq 0 -a ${FSLABEL} = "auto" ]; then
 	roundup() echo $((($1+$2-1)-($1+$2-1)%$2))
 	nf=$(find ${FSPROTO} |wc -l)
 	sk=$(du -skA ${FSPROTO} |cut -f1)
+	#FSINODE=$(roundup $(($sk*1024/$nf)) ${FSINODE})
 	FSSIZE=$(roundup $(($sk*12/10)) 1024)
 	IMG_SIZE=$((${FSSIZE}+32))
 fi
