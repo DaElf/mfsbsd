@@ -457,9 +457,9 @@ ${WRKDIR}/.install-roothack_done:
 boot: install prune ${WRKDIR}/.boot_done
 ${WRKDIR}/.boot_done:
 	@echo -n "Configuring boot environment ..."
-	${_v}${MKDIR} ${WRKDIR}/disk/boot && ${CHOWN} root:wheel ${WRKDIR}/disk
+	${_v}${MKDIR} -p ${WRKDIR}/disk/boot/kernel && ${CHOWN} root:wheel ${WRKDIR}/disk
 	${_v}${RM} -f ${_BOOTDIR}/kernel/kernel.debug
-	${_v}${CP} -rp ${_BOOTDIR}/kernel ${WRKDIR}/disk/boot
+	${_v}-${CP} -f ${_BOOTDIR}/kernel/kernel ${WRKDIR}/disk/boot/kernel/
 	${_v}${CP} -rp ${_DESTDIR}/boot.config ${WRKDIR}/disk
 .for FILE in boot *boot mbr pmbr defaults loader zfsloader loader.help *.rc *.4th
 	-${CP} -rp ${_DESTDIR}/boot/${FILE} ${WRKDIR}/disk/boot
@@ -476,6 +476,8 @@ ${WRKDIR}/.boot_done:
 	-test -f ${_BOOTDIR}/kernel/${FILE}.ko \
 	&& ${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko.symbols ${WRKDIR}/disk/boot/kernel
 . endif
+
+	-find  ${_BOOTDIR}/kernel -name 'acpi*.ko' -exec ${INSTALL} -m 0555 {} ${WRKDIR}/disk/boot/kernel/ \;
 .endfor
 	${_v}${MKDIR} -p ${_DESTDIR}/boot/modules
 .for FILE in ${MFSMODULES}
