@@ -207,7 +207,7 @@ ${WRKDIR}/.extract_done:
 	${_v}${MV} ${_BOOTDIR}/${KERNCONF}/* ${_BOOTDIR}/kernel
 	${_v}${RMDIR} ${_BOOTDIR}/${KERNCONF}
 .else
-	[ -f ${KERNELFILE} ] && ${TAR} --unlink -xpzf ${KERNELFILE} -C ${_ROOTDIR}
+	[ -f ${KERNELFILE} ] && ${TAR} --unlink -xpf ${KERNELFILE} -C ${_ROOTDIR}
 .endif
 	@echo " done"
 .endif
