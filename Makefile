@@ -583,3 +583,4 @@ clean-roothack:
 clean: clean-roothack
 	${_v}if [ -d ${WRKDIR} ]; then ${CHFLAGS} -R noschg ${WRKDIR}; fi
 	${_v}cd ${WRKDIR} && ${RM} -rf mfs mnt disk dist trees .*_done
+	${RM} -f disk.img
