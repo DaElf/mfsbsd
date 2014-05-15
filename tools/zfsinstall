@@ -4,7 +4,8 @@
 # mfsBSD ZFS install script
 # Copyright (c) 2011-2015 Martin Matuska <mm at FreeBSD.org>
 #
-FS_LIST="var tmp"
+#FS_LIST="var tmp"
+#FS_LIST="var"
 
 usage() {
 	echo "Usage: $0 [-h] -d geom_provider [-d geom_provider ...] -u dist_url [-r mirror|raidz] [-m mount_point] [-p zfs_pool_name] [-s swap_partition_size] [-z zfs_partition_size] [-c] [-C] [-l] [-4]"
@@ -77,7 +78,7 @@ if [ -z "$DEVS" -o -z "$URL" -a -z "$ARCHIVE" ]; then
 fi
 
 if [ -z "$POOL" ]; then
-	POOL=tank
+	POOL=zroot
 fi
 
 if [ -z "$VERSION" ]; then
@@ -276,7 +277,7 @@ echo " done"
 
 if [ "${FLETCHER}" = "1" ]; then
 	echo -n "Setting default checksum to fletcher4 for ${POOL} ..."
-	if ! /sbin/zfs set checksum=fletcher4 ${POOL} > /dev/null 2> /dev/null; then
+	if ! /sbin/zfs set checksum=fletcher4 ${POOL}; then
 		echo " error"
 		exit 1
 	fi
@@ -285,7 +286,7 @@ fi
 
 if [ "${LZJB}" = "1" ]; then
 	echo -n "Setting default compression to lzjb for ${POOL} ..."
-	if ! /sbin/zfs set compression=lzjb ${POOL} > /dev/null 2> /dev/null; then
+	if ! /sbin/zfs set compression=lzjb ${POOL}; then
 		echo " error"
 		exit 1
 	fi
@@ -293,11 +294,11 @@ if [ "${LZJB}" = "1" ]; then
 fi
 
 echo -n "Creating ${POOL} root partition:"
-if ! /sbin/zfs create -o mountpoint=none ${POOL}/root > /dev/null; then
+if ! /sbin/zfs create -o mountpoint=none ${POOL}/root; then
 	echo " error"
 	exit 1
 fi
-if ! /sbin/zfs create -o mountpoint=${ROOTMNT} ${POOL}/root/default; then
+if ! /sbin/zfs create -o mountpoint=${ROOTMNT} ${POOL}/root/DEFAULT; then
 	echo " error"
 	exit 1
 fi
@@ -309,7 +310,7 @@ for FS in ${FS_LIST}; do
 	else
 		MNTPT=
 	fi
-	if ! /sbin/zfs create ${MNTPT} ${POOL}/root/${FS} > /dev/null 2> /dev/null; then
+	if ! /sbin/zfs create ${MNTPT} ${POOL}/root/${FS}; then
 		echo " error"
 		exit 1
 	fi
@@ -317,7 +318,7 @@ for FS in ${FS_LIST}; do
 done
 echo " ... done"
 echo -n "Setting bootfs for ${POOL} to ${POOL}/root ..."
-if ! /sbin/zpool set bootfs=${POOL}/root ${POOL} > /dev/null 2> /dev/null; then
+if ! /sbin/zpool set bootfs=${POOL}/root/DEFAULT ${POOL}; then
 	echo " error"
 	exit 1
 fi
@@ -328,13 +329,13 @@ echo " done"
 if [ "${LEGACY}" = "1" ]; then
 	echo -n "Mounting ${POOL} on ${MNT} ..."
 	/bin/mkdir -p ${MNT}
-	if ! /sbin/mount -t zfs ${POOL}/root ${MNT} > /dev/null 2> /dev/null; then
+	if ! /sbin/mount -t zfs ${POOL}/root/DEFAULT ${MNT}; then
 		echo " error mounting pool/root"
 		exit 1
 	fi
 	for FS in ${FS_LIST}; do
 		/bin/mkdir -p ${MNT}/${FS}
-		if ! /sbin/mount -t zfs ${POOL}/root/${FS} ${MNT}/${FS} > /dev/null 2> /dev/null; then
+		if ! /sbin/mount -t zfs ${POOL}/root/${FS} ${MNT}/${FS}; then
 			echo " error mounting ${POOL}/root/${FS}"
 			exit 1
 		fi
@@ -344,7 +345,7 @@ fi
 
 echo -n "Extracting FreeBSD distribution ..."
 for file in ${EXTRACT_FILES}; do
-	if ! /usr/bin/tar -C ${MNT} -x -f ${file} > /dev/null 2> /dev/null; then
+	if ! /usr/bin/tar -C ${MNT} -x -f ${file}; then
 		echo " error"
 		exit 1
 	fi
@@ -355,7 +356,7 @@ echo " done"
 
 echo -n "Writing /boot/loader.conf..."
 echo "zfs_load=\"YES\"" > ${MNT}/boot/loader.conf
-echo "vfs.root.mountfrom=\"zfs:${POOL}/root\"" >> ${MNT}/boot/loader.conf
+echo "vfs.root.mountfrom=\"zfs:${POOL}/root/DEFAULT\"" >> ${MNT}/boot/loader.conf
 echo " done"
 
 # Write fstab if swap or legacy
@@ -381,32 +382,32 @@ echo " done"
 echo -n "Copying /boot/zfs/zpool.cache ..."
 if [ -n "${LEGACY}" ]; then
 	for FS in ${FS_LIST}; do
-		/sbin/umount ${MNT}/${FS} > /dev/null 2> /dev/null
+		/sbin/umount ${MNT}/root/${FS}
 	done
-	/sbin/umount ${MNT} > /dev/null 2> /dev/null
+	/sbin/umount ${MNT}
 fi
-if ! /sbin/zpool export ${POOL} > /dev/null 2> /dev/null; then
+if ! /sbin/zpool export ${POOL}; then
 	echo " error exporting pool"
 	exit 1
 fi
-if ! /sbin/zpool import ${ALTROOT} ${POOL} > /dev/null 2> /dev/null; then
+if ! /sbin/zpool import ${ALTROOT} ${POOL}; then
 	echo " error importing pool"
 	exit 1
 fi
 if [ -n "${LEGACY}" ]; then
-	if ! /sbin/mount -t zfs ${POOL}/root ${MNT} > /dev/null 2> /dev/null; then
-		echo " error mounting ${POOL}/root"
+	if ! /sbin/mount -t zfs ${POOL}/root/DEFAULT ${MNT}; then
+		echo " error mounting ${POOL}/root/DEFAULT"
 		exit 1
 	fi
 fi
-if ! /bin/cp /boot/zfs/zpool.cache ${MNT}/boot/zfs/ > /dev/null 2> /dev/null; then
+if ! /bin/cp /boot/zfs/zpool.cache ${MNT}/boot/zfs/; then
 	echo " error copying zpool.cache"
 	exit 1
 fi
 if [ -n "${LEGACY}" ]; then
 	for FS in ${FS_LIST}; do
-		if ! /sbin/mount -t zfs ${POOL}/${FS} ${MNT}/${FS} > /dev/null 2> /dev/null; then
-		echo " error mounting ${POOL}/${FS}"
+		if ! /sbin/mount -t zfs ${POOL}/root/${FS} ${MNT}/${FS}; then
+		echo " error mounting ${POOL}/root/${FS}"
 		exit 1
 		fi
 	done
