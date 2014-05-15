@@ -293,7 +293,11 @@ if [ "${LZJB}" = "1" ]; then
 fi
 
 echo -n "Creating ${POOL} root partition:"
-if ! /sbin/zfs create -o mountpoint=${ROOTMNT} ${POOL}/root > /dev/null 2> /dev/null; then
+if ! /sbin/zfs create -o mountpoint=none ${POOL}/root > /dev/null; then
+	echo " error"
+	exit 1
+fi
+if ! /sbin/zfs create -o mountpoint=${ROOTMNT} ${POOL}/root/default; then
 	echo " error"
 	exit 1
 fi
