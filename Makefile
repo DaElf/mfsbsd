@@ -127,14 +127,16 @@ _ROOTHACK_FILE=${ROOTHACK_FILE}
 _ROOTHACK_FILE=${WRKDIR}/roothack/roothack
 .endif
 
-# Check if we are installing FreeBSD 9 or higher
-.if exists(${BASE}/base.txz) && exists(${BASE}/kernel.txz)
+#default to new layout
 FREEBSD9?=yes
 BASEFILE?=${BASE}/base.txz
 KERNELFILE?=${BASE}/kernel.txz
-.else
-BASEFILE?=${BASE}/base/base.??
-KERNELFILE?=${BASE}/kernels/generic.??
+
+# Check if we are installing FreeBSD 9 or higher
+# Fix this to undef freebsd9
+.if ! exists(${BASE}/${BASEFILE})
+BASEFILE=${BASE}/base/base.??
+KERNELFILE=${BASE}/kernels/generic.??
 .endif
 
 .if defined(MAKEJOBS)
