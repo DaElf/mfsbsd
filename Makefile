@@ -320,6 +320,22 @@ ${WRKDIR}/.packages_done:
 	fi
 	${_v}${TOUCH} ${WRKDIR}/.packages_done
 
+
+PACKAGES= \
+	rsync
+
+ABI=freebsd:10:x86:64
+_pkgsite= env PACKAGESITE=http://pkg.freebsd.org/${ABI}/latest
+
+packages: install prune ${WRKDIR}/.packages_done
+${WRKDIR}/.packages_done:
+	${CP} /etc/resolv.conf ${_DESTDIR}/etc/resolv.conf
+.for _pkg in ${PACKAGES}
+	${PKG} -c ${_DESTDIR} install ${_pkg}
+.endfor
+	${TOUCH} ${WRKDIR}/.packages_done
+	${RM} ${_DESTDIR}/etc/resolv.conf
+
 config: install ${WRKDIR}/.config_done
 ${WRKDIR}/.config_done:
 	@echo -n "Installing configuration scripts and files ..."
