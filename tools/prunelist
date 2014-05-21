@@ -68,5 +68,13 @@ usr/sbin/rndc-confgen
 usr/sbin/named-reconfig
 usr/sbin/named-reload
 #
+usr/bin/lldb
+#
 usr/share/groff_fonts
 usr/share/i8inn
+usr/share/i18n
+usr/share/groff_font
+#
+usr/lib/debug
+usr/tests
+
