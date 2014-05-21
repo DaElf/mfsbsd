@@ -171,6 +171,8 @@ NO_PRUNE=1
 WITH_RESCUE=1
 .endif
 
+DO_PRUNE?=-X ${PRUNELIST}
+
 all: image
 
 destdir: ${_DESTDIR} ${_BOOTDIR}
@@ -194,7 +196,7 @@ ${WRKDIR}/.extract_done:
 		exit 1; \
 	fi
 	@echo "Extracting base and kernel ..."
-	${TAR} --unlink -xpf ${BASEFILE} -C ${_DESTDIR}
+	${_v}${TAR} --unlink -xpf ${BASEFILE} ${DO_PRUNE} -C ${_DESTDIR}
 	if [ -f ${KERNELFILE} ]; then \
 		${TAR} --unlink -xpf ${KERNELFILE} -C ${_ROOTDIR}; \
 	fi
