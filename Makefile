@@ -128,16 +128,8 @@ _ROOTHACK_FILE=${WRKDIR}/roothack/roothack
 .endif
 
 #default to new layout
-FREEBSD9?=yes
 BASEFILE?=${BASE}/base.txz
 KERNELFILE?=${BASE}/kernel.txz
-
-# Check if we are installing FreeBSD 9 or higher
-# Fix this to undef freebsd9
-.if ! exists(${BASE}/${BASEFILE})
-BASEFILE=${BASE}/base/base.??
-KERNELFILE=${BASE}/kernels/generic.??
-.endif
 
 .if defined(MAKEJOBS)
 _MAKEJOBS=	-j${MAKEJOBS}
@@ -194,23 +186,11 @@ ${WRKDIR}/.extract_done:
 		echo "make BASE=/cdrom/usr/freebsd-dist"; \
 		exit 1; \
 	fi
-.if !defined(FREEBSD9)
-	${_v}for DIR in base kernels; do \
-		if [ ! -d "${BASE}/$$DIR" ]; then \
-			echo "Cannot find directory \"${BASE}/$$DIR\""; \
-			exit 1; \
-		fi \
-	done
-.endif
 	@echo "Extracting base and kernel ..."
 	${TAR} --unlink -xpf ${BASEFILE} -C ${_DESTDIR}
-.if !defined(FREEBSD9)
-	${_v}${CAT} ${KERNELFILE} | ${TAR} --unlink -xpzf - -C ${_BOOTDIR}
-	${_v}${MV} ${_BOOTDIR}/${KERNCONF}/* ${_BOOTDIR}/kernel
-	${_v}${RMDIR} ${_BOOTDIR}/${KERNCONF}
-.else
-	[ -f ${KERNELFILE} ] && ${TAR} --unlink -xpf ${KERNELFILE} -C ${_ROOTDIR}
-.endif
+	if [ -f ${KERNELFILE} ]; then \
+		${TAR} --unlink -xpf ${KERNELFILE} -C ${_ROOTDIR}; \
+	fi
 	@echo " done"
 .endif
 	${_v}${TOUCH} ${WRKDIR}/.extract_done
