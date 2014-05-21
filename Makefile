@@ -126,6 +126,14 @@ _ROOTHACK_FILE=${ROOTHACK_FILE}
 _ROOTHACK_FILE=${WRKDIR}/roothack/roothack
 .endif
 
+.if defined(ISI)
+BASE=${.CURDIR}
+BASEFILE=${BASE}/install.tar.gz
+# kernel is packaged in install.tar.gz
+KERNELFILE=/dev/null
+PKGNG=1
+.endif
+
 #default to new layout
 BASEFILE?=${BASE}/base.txz
 KERNELFILE?=${BASE}/kernel.txz
@@ -174,7 +182,7 @@ ${_BOOTDIR}:
 	${MKDIR} ${_BOOTDIR}/kernel ${_BOOTDIR}/modules
 	${CHOWN} -R root:wheel ${_BOOTDIR}
 
-extract: destdir ${WRKDIR}/.extract_done
+extract: destdir ${BASEFILE} ${WRKDIR}/.extract_done
 ${WRKDIR}/.extract_done:
 .if !defined(CUSTOM)
 	${_v}if [ ! -d "${BASE}" ]; then \
@@ -561,4 +569,33 @@ clean-roothack:
 clean: clean-roothack
 	${_v}if [ -d ${WRKDIR} ]; then ${CHFLAGS} -R noschg ${WRKDIR}; fi
 	${_v}cd ${WRKDIR} && ${RM} -rf mfs mnt disk dist trees .*_done
-	${RM} -f disk.img
+	${RM} -f disk.img disk.img.gz
+
+# This is for pymouth testing and is default for now
+# Add .else sections for other locations
+
+MIN=
+.if defined(MIN)
+PXE_HOST=work-dog-1.west.isilon.com
+PXE_USER=root
+PXE_PATH=/bits/tftpboot/pxe/images/mfsbsd/mfsbsd-onefs.gz
+.endif
+
+
+PXE_IP!=dig +short ${PXE_HOST}
+
+pxe-entry:
+	@echo "label OneFS-BSD10"
+	@echo "  menu label OneFS-BSD10"
+	@echo "  kernel memdisk"
+	@echo "  append raw"
+	@echo "  initrd http://${PXE_IP}/tftpboot/images/mfsbsd/mfsbsd-onefs.gz"
+
+
+publish-pxe:
+	-gzip --keep --force disk.img
+	rsync -av disk.img.gz ${PXE_USER}@${PXE_HOST}:${PXE_PATH}
+
+fetch-image: ${.CURDIR}/install.tar.gz
+${.CURDIR}/install.tar.gz:
+	fetch -o ${.CURDIR}/install.tar.gz http://buildbiox.west.isilon.com/snapshots/latest.BR_RIPT_BSD10/obj.DEBUG/install.tar.gz
