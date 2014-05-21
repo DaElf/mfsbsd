@@ -70,8 +70,7 @@ SSHKEYGEN=/usr/bin/ssh-keygen
 SYSCTL=/sbin/sysctl
 PKG=/usr/local/sbin/pkg
 #
-CURDIR!=${PWD}
-WRKDIR?=${CURDIR}/work
+WRKDIR?=${.CURDIR}/work
 #
 BSDLABEL=bsdlabel
 #
@@ -528,7 +527,7 @@ ${GCEFILE}:
 .if !exists(${GTAR})
 	${_v}echo "${GTAR} is missing, please install archivers/gtar first"; exit 1
 .else
-	${_v}${GTAR} -C ${CURDIR} -Szcf ${GCEFILE} --transform='s/${IMAGE}/disk.raw/' ${IMAGE}
+	${_v}${GTAR} -C ${.CURDIR} -Szcf ${GCEFILE} --transform='s/${IMAGE}/disk.raw/' ${IMAGE}
 	@echo " GCE tarball built"
 	${_v}${LS} -l ${GCEFILE}
 .endif
@@ -540,7 +539,7 @@ ${ISOIMAGE}:
 . if !exists(${MKISOFS})
 	@echo "${MKISOFS} is missing, please install sysutils/cdrtools first"; exit 1
 . else
-	${MKISOFS} -b boot/cdboot -no-emul-boot -r -J -V mfsBSD -o ${ISOIMAGE} ${WRKDIR}/disk
+	${_v}${MKISOFS} -b boot/cdboot -no-emul-boot -r -J -V mfsBSD -o ${ISOIMAGE} ${WRKDIR}/disk
 . endif
 .else
 	${_v}${MAKEFS} -t cd9660 -o rockridge,bootimage=i386\;/boot/cdboot,no-emul-boot,label=mfsBSD ${ISOIMAGE} ${WRKDIR}/disk
@@ -552,7 +551,7 @@ tar: install prune config customfiles boot compress-usr mfsroot fbsddist ${TARFI
 ${TARFILE}:
 	@echo -n "Creating tar file ..."
 	${_v}cd ${WRKDIR}/disk && ${FIND} . -depth 1 \
-		-exec ${TAR} -r -f ${CURDIR}/${TARFILE} {} \;
+		-exec ${TAR} -r -f ${.CURDIR}/${TARFILE} {} \;
 	@echo " done"
 	${_v}${LS} -l ${TARFILE}
 
