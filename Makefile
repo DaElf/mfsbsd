@@ -515,6 +515,8 @@ ${WRKDIR}/.fbsddist_done:
 
 image: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist ${IMAGE}
 ${IMAGE}:
+	@echo "This is the old mbr based image -- use make disk.img for gpt image"
+	false
 	@echo -n "Creating image file ..."
 .if defined(BSDPART)
 	${_v}${MKDIR} ${WRKDIR}/mnt ${WRKDIR}/trees/base/boot
