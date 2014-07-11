@@ -80,6 +80,8 @@ BOOTMODULES=acpi ahci
 MFSMODULES=geom_mirror geom_nop opensolaris zfs ext2fs snp smbus ipmi ntfs nullfs tmpfs \
 	aesni crypto cryptodev geom_eli
 #
+MFSMODULES+=if_cxgb if_cxgbe if_igb if_ixg
+#
 
 .if defined(V)
 _v=
@@ -393,6 +395,8 @@ ${WRKDIR}/.config_done:
 		${INSTALL} -m 0555 ${SCRIPTSDIR}/$${SCRIPT} ${_DESTDIR}/etc/rc.d/; \
 	done
 #	${_v}${SED} -I -E 's/\(ttyv[2-7].*\)on /\1off/g' ${_DESTDIR}/etc/ttys
+# Force ttyu0 to always be enabled with vt100 for console output
+	${SED} -I -E 's/\(^ttyu0.*\)dialup\(.*\)off\(.*\)/\1vt100\2on \3/' ${_DESTDIR}/etc/ttys
 .if !defined(ROOTHACK)
 	${_v}echo "/dev/md0 / ufs rw 0 0" > ${_DESTDIR}/etc/fstab
 	${_v}echo "tmpfs /tmp tmpfs rw,mode=1777 0 0" >> ${_DESTDIR}/etc/fstab
@@ -468,7 +472,7 @@ ${WRKDIR}/.boot_done:
 	${_v}${RM} -f ${_BOOTDIR}/kernel/kernel.debug
 	${_v}-${CP} -f ${_BOOTDIR}/kernel/kernel ${WRKDIR}/disk/boot/kernel/
 	${_v}${CP} -rp ${_DESTDIR}/boot.config ${WRKDIR}/disk
-.for FILE in boot *boot mbr pmbr defaults loader zfsloader loader.help *.rc *.4th
+.for FILE in boot *boot mbr pmbr defaults loader zfsloader loader.help *.rc *.4th device.hints
 	-${CP} -rp ${_DESTDIR}/boot/${FILE} ${WRKDIR}/disk/boot
 .endfor
 	${_v}${RM} -rf ${WRKDIR}/disk/boot/kernel/*.ko ${WRKDIR}/disk/boot/kernel/*.symbols
