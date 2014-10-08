@@ -11,7 +11,7 @@ FREEBSD9=		1
 IMAGE=			disk.img
 KERNELFILE=		/dev/null
 KERNDIR=		kernel.amd64
-PRUNELIST=		prunelist-isi
+PRUNELIST=		tools/prunelist-isi
 
 WITHOUT_RESCUE=
 
