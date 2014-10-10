@@ -6,6 +6,9 @@
 # Version 2.1
 #
 
+# Include any isi config overrides
+.sinclude "config.isi.mk"
+
 #
 # User-defined variables
 #
@@ -603,6 +606,8 @@ clean: clean-roothack
 	${_v}cd ${WRKDIR} && ${RM} -rf mfs mnt disk dist trees .*_done
 	${RM} -f disk.img disk.img.gz
 
+
+.sinclude "pxe.isi.mk"
 # This is for pymouth testing and is default for now
 # Add .else sections for other locations
 
