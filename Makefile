@@ -75,12 +75,14 @@ WRKDIR?=${.CURDIR}/work
 BSDLABEL=bsdlabel
 #
 DOFS=${TOOLSDIR}/doFS.sh
-SCRIPTS=mdinit mfsbsd interfaces packages
-BOOTMODULES=acpi ahci
-MFSMODULES=geom_mirror geom_nop opensolaris zfs ext2fs snp smbus ipmi ntfs nullfs tmpfs \
+
+SCRIPTS?=	mdinit mfsbsd interfaces packages
+BOOTMODULES?=	acpi ahci
+MFSMODULES?=	geom_mirror geom_nop opensolaris zfs ext2fs snp smbus ipmi ntfs nullfs tmpfs \
 	aesni crypto cryptodev geom_eli
 #
-MFSMODULES+=if_cxgb if_cxgbe if_igb if_ixg
+BOOTFILES?=	boot *boot mbr pmbr defaults loader zfsloader loader.help *.rc *.4th device.hints
+MFSMODULES+=	if_cxgb if_cxgbe if_igb if_ixg
 #
 
 .if defined(V)
@@ -237,18 +239,18 @@ ${WRKDIR}/.install_done:
 . endif
 	${_v}${MKDIR} ${_DISTDIR}
 . if defined(ROOTHACK)
-	${_v}${CP} -rp ${_BOOTDIR}/kernel ${_DESTDIR}/boot
+	@${CP} -rp ${_BOOTDIR}/${KERNDIR} ${_DESTDIR}/boot
 . endif
 . if !defined(CUSTOM) && exists(${BASE}/base.txz) && exists(${BASE}/kernel.txz)
 	${_v}${CP} ${BASE}/base.txz ${_DISTDIR}/base.txz
 	${_v}${CP} ${BASE}/kernel.txz ${_DISTDIR}/kernel.txz
 . else
-	${_v}${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} --exclude "boot/kernel/*" -f ${_DISTDIR}/base.txz .
-	${_v}${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} -f ${_DISTDIR}/kernel.txz boot/kernel
+	${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} --exclude "boot/${KERNDIR}/*" -f ${_DISTDIR}/base.txz .
+	${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} -f ${_DISTDIR}/kernel.txz boot/${KERNDIR}
 . endif
 	@echo " done"
 . if defined(ROOTHACK)
-	${_v}${RM} -rf ${_DESTDIR}/boot/kernel
+	${RM} -rf ${_DESTDIR}/boot/${KERNDIR}
 . endif
 .endif
 	${_v}${CHFLAGS} -R noschg ${_DESTDIR} > /dev/null 2> /dev/null || exit 0
@@ -293,6 +295,7 @@ ${WRKDIR}/.prune_done:
 
 packages: install prune ${WRKDIR}/.packages_done
 ${WRKDIR}/.packages_done:
+.if defined(PKGNG)
 	@echo -n "Installing pkgng ..."
 .  if !exists(${PKG_STATIC})
 	@echo "pkg-static not found at: ${PKG_STATIC}"
@@ -302,13 +305,17 @@ ${WRKDIR}/.packages_done:
 	${_v}${INSTALL} -o root -g wheel -m 0755 ${PKG_STATIC} ${_DESTDIR}/usr/local/sbin/
 	${_v}${LN} -sf pkg-static ${_DESTDIR}/usr/local/sbin/pkg
 	@echo " done"
+.endif
 	${_v}if [ -d "${PACKAGESDIR}" ]; then \
 		echo -n "Copying user packages ..."; \
 		${CP} -rf ${PACKAGESDIR} ${_DESTDIR}; \
 		echo " done"; \
 	fi
+.if defined(PKGNG)
 	${_v}if [ -d "${_DESTDIR}/packages" ]; then \
+		cd ${_DESTDIR}/packages && for FILE in *; do \
 		echo -n "Installing user packages ..."; \
+		done; \
 	fi
 	${_v}if [ -d "${_DESTDIR}/packages" ]; then \
                 cd ${_DESTDIR}/packages && for _FILE in *; do \
@@ -316,6 +323,7 @@ ${WRKDIR}/.packages_done:
                 done; \
                 ${PKG} -c ${_DESTDIR} add -M $${_FILES}; \
 	fi
+.endif
 	${_v}if [ -d "${_DESTDIR}/packages" ]; then \
 		${RM} -rf ${_DESTDIR}/packages; \
 		echo " done"; \
@@ -467,41 +475,41 @@ ${WRKDIR}/.install-roothack_done:
 
 boot: install prune ${WRKDIR}/.boot_done
 ${WRKDIR}/.boot_done:
-	@echo -n "Configuring boot environment ..."
-	${_v}${MKDIR} -p ${WRKDIR}/disk/boot/kernel && ${CHOWN} root:wheel ${WRKDIR}/disk
-	${_v}${RM} -f ${_BOOTDIR}/kernel/kernel.debug
-	${_v}-${CP} -f ${_BOOTDIR}/kernel/kernel ${WRKDIR}/disk/boot/kernel/
+	@echo "Configuring boot environment ..."
+	${MKDIR} -p ${WRKDIR}/disk/boot/kernel && ${CHOWN} root:wheel ${WRKDIR}/disk
+	${RM} -f ${_BOOTDIR}/${KERNDIR}/kernel.debug
+	-${CP} -rp ${_BOOTDIR}/${KERNDIR} ${WRKDIR}/disk/boot/kernel
 	${_v}${CP} -rp ${_DESTDIR}/boot.config ${WRKDIR}/disk
-.for FILE in boot *boot mbr pmbr defaults loader zfsloader loader.help *.rc *.4th device.hints
+.for FILE in ${BOOTFILES}
 	-${CP} -rp ${_DESTDIR}/boot/${FILE} ${WRKDIR}/disk/boot
 .endfor
-	${_v}${RM} -rf ${WRKDIR}/disk/boot/kernel/*.ko ${WRKDIR}/disk/boot/kernel/*.symbols
+	${RM} -rf ${WRKDIR}/disk/boot/${KERNDIR}/*.ko ${WRKDIR}/disk/boot/kernel/*.symbols
 .if defined(DEBUG)
-	-${INSTALL} -m 0555 ${_BOOTDIR}/kernel/kernel.symbols ${WRKDIR}/disk/boot/kernel
+	-${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/kernel.symbols ${WRKDIR}/disk/boot/kernel
 .endif
 .for FILE in ${BOOTMODULES}
-	-${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko ${WRKDIR}/disk/boot/kernel
+	-${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ${WRKDIR}/disk/boot/kernel
 . if defined(DEBUG)
-	-${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko.symbols ${WRKDIR}/disk/boot/kernel
+	-${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ${WRKDIR}/disk/boot/kernel
 . endif
 
-	-find  ${_BOOTDIR}/kernel -name 'acpi*.ko' -exec ${INSTALL} -m 0555 {} ${WRKDIR}/disk/boot/kernel/ \;
+	-find  ${_BOOTDIR}/${KERNDIR} -name 'acpi*.ko' -exec ${INSTALL} -m 0555 {} ${WRKDIR}/disk/boot/kernel/ \;
 .endfor
 	${_v}${MKDIR} -p ${_DESTDIR}/boot/modules
 .for FILE in ${MFSMODULES}
-	-${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko ${_DESTDIR}/boot/modules
+	-${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ${_DESTDIR}/boot/modules
 . if defined(DEBUG)
-	-${INSTALL} -m 0555 ${_BOOTDIR}/kernel/${FILE}.ko.symbols ${_DESTDIR}/boot/modules
+	-${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ${_DESTDIR}/boot/modules
 . endif
 .endfor
 .if defined(ROOTHACK)
-	@echo -n "Installing tmpfs module for roothack ..."
-	${_v}${MKDIR} -p ${_ROOTDIR}/boot/modules
-	${_v}${INSTALL} -m 0666 ${_BOOTDIR}/kernel/tmpfs.ko ${_ROOTDIR}/boot/modules
+	@echo "Installing tmpfs module for roothack ..."
+	${MKDIR} -p ${_ROOTDIR}/boot/modules
+	${INSTALL} -m 0666 ${_BOOTDIR}/${KERNDIR}/tmpfs.ko ${_ROOTDIR}/boot/modules
 	@echo " done"
 .endif
-	${_v}${RM} -rf ${_BOOTDIR}/kernel ${_BOOTDIR}/*.symbols
-	${_v}${TOUCH} ${WRKDIR}/.boot_done
+	${RM} -rf ${_BOOTDIR}/${KERNDIR} ${_BOOTDIR}/*.symbols
+	@${TOUCH} ${WRKDIR}/.boot_done
 	@echo " done"
 
 .if defined(ROOTHACK)
