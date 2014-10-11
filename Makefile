@@ -244,7 +244,7 @@ ${WRKDIR}/.install_done:
 . endif
 	${_v}${MKDIR} ${_DISTDIR}
 . if defined(ROOTHACK)
-	@${CP} -rp ${_BOOTDIR}/${KERNDIR} ${_DESTDIR}/boot
+	${CP} -rp ${_BOOTDIR}/${KERNDIR}/* ${_DESTDIR}/boot/kernel/*
 . endif
 . if !defined(CUSTOM) && exists(${BASE}/base.txz) && exists(${BASE}/kernel.txz)
 	${_v}${CP} ${BASE}/base.txz ${_DISTDIR}/base.txz
@@ -283,7 +283,10 @@ ${WRKDIR}/.install_done:
 .endif
 	${_v}${TOUCH} ${WRKDIR}/.install_done
 
-prune: install ${WRKDIR}/.prune_done
+prune:
+	@echo "Not doing a damn thing"
+
+prune_: install ${WRKDIR}/.prune_done
 ${WRKDIR}/.prune_done:
 .if !defined(NO_PRUNE)
 	@echo -n "Removing selected files from distribution ..."
@@ -512,7 +515,7 @@ ${WRKDIR}/.boot_done:
 	@echo " done"
 .endif
 	${RM} -rf ${_BOOTDIR}/${KERNDIR} ${_BOOTDIR}/*.symbols
-	@${TOUCH} ${WRKDIR}/.boot_done
+	${TOUCH} ${WRKDIR}/.boot_done
 	@echo " done"
 
 .if defined(ROOTHACK)
