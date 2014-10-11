@@ -5,7 +5,7 @@ BRANCH?=		BR_RIPT_BSD10
 
 WRKDIR=			${.CURDIR}/tmp
 BASE=			${WRKDIR}
-BASEFILE=		${BASE}/install.tar.gz
+BASEFILE=		${.CURDIR}/install.tar.gz
 CUSTOMFILES=		/nonexistent
 FREEBSD9=		1
 IMAGE=			disk.img
