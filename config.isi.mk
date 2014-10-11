@@ -13,7 +13,7 @@ KERNELFILE=		/dev/null
 KERNDIR?=		kernel.amd64
 PRUNELIST=		tools/prunelist-isi
 
-WITHOUT_RESCUE=
+WITH_RESCUE=
 
 MFSMODULES=	geom_mirror geom_nop opensolaris zfs ext2fs snp smbus ipmi ntfs nullfs tmpfs
 MFSMODULES+=	if_bxe if_cxgb if_cxgbe if_em if_igb if_ixgbe
