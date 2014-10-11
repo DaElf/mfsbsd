@@ -10,7 +10,7 @@ CUSTOMFILES=		/nonexistent
 FREEBSD9=		1
 IMAGE=			disk.img
 KERNELFILE=		/dev/null
-KERNDIR=		kernel.amd64
+KERNDIR?=		kernel.amd64
 PRUNELIST=		tools/prunelist-isi
 
 WITHOUT_RESCUE=
