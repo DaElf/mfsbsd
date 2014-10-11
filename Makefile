@@ -608,31 +608,3 @@ clean: clean-roothack
 
 
 .sinclude "pxe.isi.mk"
-# This is for pymouth testing and is default for now
-# Add .else sections for other locations
-
-MIN=
-.if defined(MIN)
-PXE_HOST=work-dog-1.west.isilon.com
-PXE_USER=root
-PXE_PATH=/bits/tftpboot/pxe/images/mfsbsd/mfsbsd-onefs.gz
-.endif
-
-
-PXE_IP!=dig +short ${PXE_HOST}
-
-pxe-entry:
-	@echo "label OneFS-BSD10"
-	@echo "  menu label OneFS-BSD10"
-	@echo "  kernel memdisk"
-	@echo "  append raw"
-	@echo "  initrd http://${PXE_IP}/tftpboot/images/mfsbsd/mfsbsd-onefs.gz"
-
-
-publish-pxe:
-	-gzip --keep --force disk.img
-	rsync -av disk.img.gz ${PXE_USER}@${PXE_HOST}:${PXE_PATH}
-
-fetch-image: ${.CURDIR}/install.tar.gz
-${.CURDIR}/install.tar.gz:
-	fetch -o ${.CURDIR}/install.tar.gz http://buildbiox.west.isilon.com/snapshots/latest.BR_RIPT_BSD10/obj.DEBUG/install.tar.gz
