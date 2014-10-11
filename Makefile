@@ -251,7 +251,8 @@ ${WRKDIR}/.install_done:
 	${_v}${CP} ${BASE}/kernel.txz ${_DISTDIR}/kernel.txz
 . else
 	${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} --exclude "boot/${KERNDIR}/*" -f ${_DISTDIR}/base.txz .
-	${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} -f ${_DISTDIR}/kernel.txz boot/${KERNDIR}
+	# This line is probably wrong 
+	${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} -f ${_DISTDIR}/kernel.txz boot/kernel
 . endif
 	@echo " done"
 . if defined(ROOTHACK)
