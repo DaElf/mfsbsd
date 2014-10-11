@@ -495,6 +495,8 @@ ${WRKDIR}/.boot_done:
 .if defined(DEBUG)
 	${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/kernel.symbols ${WRKDIR}/disk/boot/kernel
 .endif
+	# Install modules need to boot into the kernel directory
+	${FIND} ${_BOOTDIR}/${KERNDIR} -name 'acpi*.ko' -exec ${INSTALL} -m 0555 {} ${WRKDIR}/disk/boot/kernel \;
 .for FILE in ${BOOTMODULES}
 	[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ] || \
 		${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ${WRKDIR}/disk/boot/kernel
@@ -502,8 +504,6 @@ ${WRKDIR}/.boot_done:
 	[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ] || \
 		${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ${WRKDIR}/disk/boot/kernel
 . endif
-
-	-find  ${_BOOTDIR}/${KERNDIR} -name 'acpi*.ko' -exec ${INSTALL} -m 0555 {} ${WRKDIR}/disk/boot/kernel/ \;
 .endfor
 	${_v}${MKDIR} -p ${_DESTDIR}/boot/modules
 .for FILE in ${MFSMODULES}
