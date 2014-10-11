@@ -74,4 +74,8 @@ usr/share/groff_font
 #
 usr/lib/debug
 usr/tests
-
+usr/share/papi
+usr/local/aspera
+usr/local/man
+usr/local/lib/perl5
+usr/local/bin/*perl*
