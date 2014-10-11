@@ -550,7 +550,7 @@ ${WRKDIR}/.fbsddist_done:
 	${_v}${TOUCH} ${WRKDIR}/.fbsddist_done
 
 image: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist ${IMAGE}
-${IMAGE}:
+${IMAGE}_old:
 	@echo "This is the old mbr based image -- use make disk.img for gpt image"
 	false
 	@echo -n "Creating image file ..."
@@ -566,8 +566,8 @@ ${IMAGE}:
 	@echo " done"
 	${_v}${LS} -l ${.TARGET}
 
-disk.img: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist
-	sh ./tools/do_gpt.sh disk.img ${WRKDIR}/disk 0
+${IMAGE}: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist
+	sh ./tools/do_gpt.sh ${.TARGET} ${WRKDIR}/disk 0
 
 gce: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist ${IMAGE} ${GCEFILE}
 ${GCEFILE}:
