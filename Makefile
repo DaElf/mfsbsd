@@ -315,8 +315,8 @@ ${WRKDIR}/.packages_done:
 	${_v}${LN} -sf pkg-static ${_DESTDIR}/usr/local/sbin/pkg
 	@echo " done"
 .endif
-	${_v}if [ -d "${PACKAGESDIR}" ]; then \
-		echo -n "Copying user packages ..."; \
+	@if [ -d "${PACKAGESDIR}" ]; then \
+		echo -n "Copying user packages ${PACKAGESDIR} -> ${_DESTDIR}"; \
 		${CP} -rf ${PACKAGESDIR} ${_DESTDIR}; \
 		echo " done"; \
 	fi
