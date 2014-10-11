@@ -39,48 +39,50 @@ CFGDIR?=conf
 SCRIPTSDIR=scripts
 PACKAGESDIR?=packages
 CUSTOMFILESDIR=customfiles
-TOOLSDIR=tools
-PRUNELIST?=${TOOLSDIR}/prunelist
-PKG_STATIC?=${TOOLSDIR}/pkg-static
+TOOLSDIR=	tools
+PRUNELIST?=	${TOOLSDIR}/prunelist
+KERN_EXCLUDE?=	${TOOLSDIR}/kern_exclude
+PKG_STATIC?=	${TOOLSDIR}/pkg-static
 #
 # Program defaults
 #
-MKDIR=/bin/mkdir -p
-CHOWN=/usr/sbin/chown
-CAT=/bin/cat
-PWD=/bin/pwd
-TAR=/usr/bin/tar
-GTAR=/usr/local/bin/gtar
-CP=/bin/cp
-MV=/bin/mv
-RM=/bin/rm
-RMDIR=/bin/rmdir
-CHFLAGS=/bin/chflags
-GZIP=/usr/bin/gzip
-TOUCH=/usr/bin/touch
-INSTALL=/usr/bin/install
-LS=/bin/ls
-LN=/bin/ln
-FIND=/usr/bin/find
-PW=/usr/sbin/pw
-SED=/usr/bin/sed
-UNAME=/usr/bin/uname
-BZIP2=/usr/bin/bzip2
-XZ=/usr/bin/xz
-MAKEFS=/usr/sbin/makefs
-MKISOFS=/usr/local/bin/mkisofs
-SSHKEYGEN=/usr/bin/ssh-keygen
-SYSCTL=/sbin/sysctl
-PKG=/usr/local/sbin/pkg
+MKDIR?=		/bin/mkdir -p
+CHOWN?=		/usr/sbin/chown
+CAT?=		/bin/cat
+PWD?=		/bin/pwd
+TAR?=		/usr/bin/tar
+GTAR?=		/usr/local/bin/gtar
+CP?=		/bin/cp
+MV?=		/bin/mv
+RM?=		/bin/rm
+RMDIR?=		/bin/rmdir
+CHFLAGS?=	/bin/chflags
+GZIP?=		/usr/bin/gzip
+TOUCH?=		/usr/bin/touch
+INSTALL?=	/usr/bin/install
+LS?=		/bin/ls
+LN?=		/bin/ln
+FIND?=		/usr/bin/find
+PW?=		/usr/sbin/pw
+SED?=		/usr/bin/sed
+UNAME?=		/usr/bin/uname
+BZIP2?=		/usr/bin/bzip2
+XZ?=		/usr/bin/xz
+MAKEFS?=	/usr/sbin/makefs
+MKISOFS?=	/usr/local/bin/mkisofs
+SSHKEYGEN?=	/usr/bin/ssh-keygen
+SYSCTL?=	/sbin/sysctl
+PKG?=		/usr/local/sbin/pkg
 #
-WRKDIR?=${.CURDIR}/work
+WRKDIR?=	${.CURDIR}/work
 #
-BSDLABEL=bsdlabel
+BSDLABEL?=	bsdlabel
 #
-DOFS=${TOOLSDIR}/doFS.sh
+DOFS=		${TOOLSDIR}/doFS.sh
 
 SCRIPTS?=	mdinit mfsbsd interfaces packages
 BOOTMODULES?=	acpi ahci
+MFSMODULES?=	\
 MFSMODULES?=	geom_mirror geom_nop opensolaris zfs ext2fs snp smbus ipmi ntfs nullfs tmpfs \
 	aesni crypto cryptodev geom_eli
 #
@@ -103,7 +105,7 @@ TARGET=		${ARCH}
 .endif
 
 .if !defined(RELEASE)
-RELEASE!=${UNAME} -r
+RELEASE!=	${UNAME} -r
 .endif
 
 .if !defined(SE)
@@ -112,38 +114,38 @@ IMAGE_PREFIX?=	mfsbsd
 IMAGE_PREFIX?=	mfsbsd-se
 .endif
 
-IMAGE?=	${IMAGE_PREFIX}-${RELEASE}-${TARGET}.img
-ISOIMAGE?= ${IMAGE_PREFIX}-${RELEASE}-${TARGET}.iso
-TARFILE?= ${IMAGE_PREFIX}-${RELEASE}-${TARGET}.tar
-GCEFILE?= ${IMAGE_PREFIX}-${RELEASE}-${TARGET}.tar.gz
-_DISTDIR= ${WRKDIR}/dist/${RELEASE}-${TARGET}
+IMAGE?=		${IMAGE_PREFIX}-${RELEASE}-${TARGET}.img
+ISOIMAGE?=	${IMAGE_PREFIX}-${RELEASE}-${TARGET}.iso
+TARFILE?=	${IMAGE_PREFIX}-${RELEASE}-${TARGET}.tar
+GCEFILE?=	${IMAGE_PREFIX}-${RELEASE}-${TARGET}.tar.gz
+_DISTDIR=	${WRKDIR}/dist/${RELEASE}-${TARGET}
 
 .if !defined(DEBUG)
-EXCLUDE=--exclude *.symbols
+EXCLUDE=	--exclude *.symbols
 .else
 EXCLUDE=
 .endif
 
 # Roothack stuff
 .if defined(ROOTHACK_FILE) && exists(${ROOTHACK_FILE})
-ROOTHACK=1
+ROOTHACK=	1
 ROOTHACK_PREBUILT=1
-_ROOTHACK_FILE=${ROOTHACK_FILE}
+_ROOTHACK_FILE=	${ROOTHACK_FILE}
 .else
-_ROOTHACK_FILE=${WRKDIR}/roothack/roothack
+_ROOTHACK_FILE=	${WRKDIR}/roothack/roothack
 .endif
 
 .if defined(ISI)
-BASE=${.CURDIR}
-BASEFILE=${BASE}/install.tar.gz
+BASE=		${.CURDIR}
+BASEFILE=	${BASE}/install.tar.gz
 # kernel is packaged in install.tar.gz
 KERNELFILE=/dev/null
 PKGNG=1
 .endif
 
 #default to new layout
-BASEFILE?=${BASE}/base.txz
-KERNELFILE?=${BASE}/kernel.txz
+BASEFILE?=	${BASE}/base.txz
+KERNELFILE?=	${BASE}/kernel.txz
 
 .if defined(MAKEJOBS)
 _MAKEJOBS=	-j${MAKEJOBS}
@@ -178,7 +180,7 @@ NO_PRUNE=1
 WITH_RESCUE=1
 .endif
 
-DO_PRUNE?=-X ${PRUNELIST}
+DO_PRUNE?=	-X ${PRUNELIST}
 
 all: image
 
