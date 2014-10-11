@@ -482,13 +482,11 @@ boot: install prune ${WRKDIR}/.boot_done
 ${WRKDIR}/.boot_done:
 	@echo "Configuring boot environment ..."
 	${MKDIR} -p ${WRKDIR}/disk/boot/kernel && ${CHOWN} root:wheel ${WRKDIR}/disk
-	${RM} -f ${_BOOTDIR}/${KERNDIR}/kernel.debug
-	-${CP} -rp ${_BOOTDIR}/${KERNDIR} ${WRKDIR}/disk/boot/kernel
+	${TAR} -cf -  -X ${KERN_EXCLUDE} -C ${_BOOTDIR}/${KERNDIR} . | ${TAR} -xvf - -C ${WRKDIR}/disk/boot/kernel
 	${_v}${CP} -rp ${_DESTDIR}/boot.config ${WRKDIR}/disk
 .for FILE in ${BOOTFILES}
 	-${CP} -rp ${_DESTDIR}/boot/${FILE} ${WRKDIR}/disk/boot
 .endfor
-	${RM} -rf ${WRKDIR}/disk/boot/${KERNDIR}/*.ko ${WRKDIR}/disk/boot/kernel/*.symbols
 .if defined(DEBUG)
 	-${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/kernel.symbols ${WRKDIR}/disk/boot/kernel
 .endif
