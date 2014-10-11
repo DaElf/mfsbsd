@@ -302,7 +302,7 @@ ${WRKDIR}/.prune_done:
 	@echo " done"
 .endif
 
-packages: install prune ${WRKDIR}/.packages_done
+packages_old: install prune ${WRKDIR}/.packages_done
 ${WRKDIR}/.packages_done:
 .if defined(PKGNG)
 	@echo -n "Installing pkgng ..."
