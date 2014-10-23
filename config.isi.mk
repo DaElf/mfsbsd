@@ -14,6 +14,7 @@ KERNELFILE=		/dev/null
 KERNDIR?=		kernel.amd64
 PRUNELIST=		tools/prunelist-isi
 
+# need xz and tar to build /usr from .usr.tar.xz
 WITH_RESCUE=
 
 MFSMODULES=	geom_mirror geom_nop opensolaris zfs ext2fs snp smbus ipmi ntfs nullfs tmpfs
