@@ -6,6 +6,7 @@ BRANCH?=		BR_RIPT_BSD10
 WRKDIR=			${.CURDIR}/tmp
 BASE=			${WRKDIR}
 BASEFILE=		${.CURDIR}/install.tar.gz
+KERN_TAR=		kernel.IQ.amd64.debug.txz 
 CUSTOMFILES=		/nonexistent
 FREEBSD9=		1
 IMAGE=			disk.img
@@ -28,3 +29,12 @@ ${BASE}:
 fetch-image: ${BASEFILE}
 ${BASEFILE}:
 	fetch -o ${.TARGET} http://buildbiox.west.isilon.com/snapshots/latest.${BRANCH}/obj.DEBUG/${.TARGET:T}
+
+mn-fetch:
+	fetch -o install.tar.gz http://mn-build-00.west.isilon.com/mn-builds/BR_RIPT_BSD10_436/install.tar.gz
+	fetch -o ${KERN_TAR} http://mn-build-00.west.isilon.com/mn-builds/BR_RIPT_BSD10_436/${KERN_TAR}
+
+F=${.CURDIR}/../mfsbsd/${KERN_TAR}
+e:
+	@echo "${KERN_TAR:R}"
+	@echo "${F:tA}"
