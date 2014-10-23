@@ -194,7 +194,7 @@ ${_BOOTDIR}:
 	${MKDIR} ${_BOOTDIR}/kernel ${_BOOTDIR}/modules
 	${CHOWN} -R root:wheel ${_BOOTDIR}
 
-extract: destdir ${BASEFILE} ${WRKDIR}/.extract_done
+extract: destdir ${BASEFILE} ${WRKDIR}/.extract_done ${_DESTDIR}/isi-etc
 ${WRKDIR}/.extract_done:
 .if !defined(CUSTOM)
 	${_v}if [ ! -d "${BASE}" ]; then \
@@ -213,6 +213,10 @@ ${WRKDIR}/.extract_done:
 	@echo " done"
 .endif
 	${_v}${TOUCH} ${WRKDIR}/.extract_done
+
+${_DESTDIR}/isi-etc:
+	mv ${_DESTDIR}/etc ${_DESTDIR}/isi-etc
+	${TAR} -xpf fbsd10-etc.tgz -C ${_ROOTDIR}
 
 build: extract ${WRKDIR}/.build_done
 ${WRKDIR}/.build_done:
