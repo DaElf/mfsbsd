@@ -24,9 +24,9 @@ pxe-entry:
 	@echo "  append raw"
 	@echo "  initrd http://${PXE_IP}/${PXE_PATH}"
 
-${IMAGE}.gz:
-	gzip --keep --force ${IMAGE}
+${IMAGE}-${PART_TYPE}.gz:
+	gzip --keep --force ${IMAGE}-${PART_TYPE}
 
-publish-pxe: ${IMAGE}.gz
+publish-pxe: ${IMAGE}-${PART_TYPE}.gz
 	rsync -av ${.ALLSRC} ${PXE_USER}@${PXE_HOST}:${PXE_PATH}
 

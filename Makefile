@@ -114,6 +114,7 @@ IMAGE_PREFIX?=	mfsbsd
 IMAGE_PREFIX?=	mfsbsd-se
 .endif
 
+PART_TYPE?=	gpt
 IMAGE?=		${IMAGE_PREFIX}-${RELEASE}-${TARGET}.img
 ISOIMAGE?=	${IMAGE_PREFIX}-${RELEASE}-${TARGET}.iso
 TARFILE?=	${IMAGE_PREFIX}-${RELEASE}-${TARGET}.tar
@@ -553,10 +554,9 @@ ${WRKDIR}/.fbsddist_done:
 .endif
 	${_v}${TOUCH} ${WRKDIR}/.fbsddist_done
 
-image: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist ${IMAGE}
-${IMAGE}_old:
+image: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist ${IMAGE}-${PART_TYPE}
+${IMAGE}-bsd:
 	@echo "This is the old mbr based image -- use make disk.img for gpt image"
-	false
 	@echo -n "Creating image file ..."
 .if defined(BSDPART)
 	${_v}${MKDIR} ${WRKDIR}/mnt ${WRKDIR}/trees/base/boot
@@ -570,8 +570,10 @@ ${IMAGE}_old:
 	@echo " done"
 	${_v}${LS} -l ${.TARGET}
 
-${IMAGE}: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist
+${IMAGE}-gpt: 
 	sh ./tools/do_gpt.sh ${.TARGET} ${WRKDIR}/disk 0
+	@echo " done"
+	${LS} -l ${.TARGET}
 
 gce: install prune config genkeys customfiles boot compress-usr mfsroot fbsddist ${IMAGE} ${GCEFILE}
 ${GCEFILE}:
