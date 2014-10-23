@@ -12,17 +12,18 @@ name="mdinit"
 start_cmd="mdinit_start"
 stop_cmd=":"
 
+PATH=/rescue:/sbin:/bin:
 mdinit_start()
 {
 	if [ -f /.usr.tar.xz ]; then
-		/sbin/mount -t tmpfs tmpfs /usr
-		/rescue/xz -d -c /.usr.tar.xz | /rescue/tar -x -C / -f -
+		mount -t tmpfs tmpfs /usr
+		xz -d -c /.usr.tar.xz | tar -x -C / -f -
 	elif [ -f /.usr.tar.bz2 ]; then
-		/sbin/mount -t tmpfs tmpfs /usr
-		/rescue/bzip2 -d -c /.usr.tar.bz2 | /rescue/tar -x -C / -f -
+		mount -t tmpfs tmpfs /usr
+		bzip2 -d -c /.usr.tar.bz2 | tar -x -C / -f -
 	elif [ -f /.usr.tar.gz ]; then
-		/sbin/mount -t tmpfs tmpfs /usr
-		/rescue/gzip -d -c /.usr.tar.gz | /rescue/tar -x -C / -f -
+		mount -t tmpfs tmpfs /usr
+		gzip -d -c /.usr.tar.gz | tar -x -C / -f -
 	fi
 	/sbin/mount -t tmpfs tmpfs /var/db/pkg
 	mkdir -p /var/cache/pkg
