@@ -307,8 +307,8 @@ ${WRKDIR}/.prune_done:
 	@echo " done"
 .endif
 
-packages_old: install prune ${WRKDIR}/.packages_done
-${WRKDIR}/.packages_done:
+packages_old: install prune ${WRKDIR}/.packages_done_old
+${WRKDIR}/.packages_done_old:
 .if defined(PKGNG)
 	@echo -n "Installing pkgng ..."
 .  if !exists(${PKG_STATIC})
