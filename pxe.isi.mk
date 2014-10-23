@@ -7,11 +7,15 @@ PXE_PATH?=	/bits/tftpboot/pxe/images/mfsbsd/mfsbsd-onefs.gz
 PXE_HOST?=	qafs.west.isilon.com
 PXE_USER?=	root
 PXE_PATH?=	/tftpboot/pxe/images/mfsbsd/mfsbsd-onefs.gz
+IP_ADDR?=	10.10.10.10
+MA= ${IP_ADDR:S/./ /g}
 
 # XXX: this seems like something that should be coded into the dhcp
 # configuration auxiliary parameters
 PXE_IP!=host	${PXE_HOST} | awk '{ print $$NF }'
 
+config-file:
+	@printf '%02X' ${MA}; echo
 
 pxe-entry:
 	@echo "label OneFS-BSD10"
