@@ -19,10 +19,10 @@ WITH_RESCUE=
 
 MFSMODULES=	geom_mirror geom_nop opensolaris zfs ext2fs snp smbus ipmi ntfs nullfs tmpfs
 MFSMODULES+=	if_bxe if_cxgb if_cxgbe if_em if_igb if_ixgbe
+MFSMODULES+=	cpuctl kcs
 
 BOOTFILES=	boot defaults loader loader.help *.rc *.4th
 BOOTFILES+=	*boot mbr pmbr zfsloader
-
 
 ${BASE}:
 	mkdir -p ${.TARGET}
