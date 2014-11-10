@@ -1,5 +1,5 @@
 .if defined(MIN)
-PXE_HOST?=	work-dog-1.west.isilon.com
+PXE_HOST?=	mn-build-00.west.isilon.com
 PXE_USER?=	root
 PXE_PATH?=	/bits/tftpboot/pxe/images/mfsbsd/mfsbsd-onefs.gz
 .endif
