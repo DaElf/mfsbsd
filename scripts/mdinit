@@ -3,6 +3,7 @@
 
 # PROVIDE: mdinit
 # BEFORE: FILESYSTEMS
+# BEFORE: isi_bootdisk_init
 # REQUIRE: mountcritlocal
 # KEYWORD: FreeBSD
 
