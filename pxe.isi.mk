@@ -30,3 +30,21 @@ ${IMAGE}-${PART_TYPE}.gz:
 publish-pxe: ${IMAGE}-${PART_TYPE}.gz
 	rsync -av ${.ALLSRC} ${PXE_USER}@${PXE_HOST}:${PXE_PATH}
 
+pxe-local-disk:
+	rm pxe-disk
+	touch pxe-disk
+	@echo "SERIAL 0 115200" >> pxe-disk
+	@echo "" >> pxe-disk
+	@echo "ui menu.c32" >> pxe-disk
+	@echo "menu title Utilities" >> pxe-disk
+	@echo "" >> pxe-disk
+	@echo "LABEL localboot-hd0" >> pxe-disk
+	@echo "  MENU LABEL Boot from first hard drive" >> pxe-disk
+	@echo "  COM32 chain.c32" >> pxe-disk
+	@echo "  APPEND hd0" >> pxe-disk
+	@echo "" >> pxe-disk
+	@echo "LABEL localboot-hd1" >> pxe-disk
+	@echo "  MENU LABEL Boot from second hard drive" >> pxe-disk
+	@echo "  COM32 chain.c32" >> pxe-disk
+	@echo "  APPEND hd1" >> pxe-disk
+	@cat pxe-disk
