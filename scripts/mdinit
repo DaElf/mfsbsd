@@ -13,7 +13,7 @@ name="mdinit"
 start_cmd="mdinit_start"
 stop_cmd=":"
 
-PATH=/rescue:/sbin:/bin:
+PATH=/rescue:/sbin:/bin:/usr/sbin:/usr/bin
 mdinit_start()
 {
 	if [ -f /.usr.tar.xz ]; then
