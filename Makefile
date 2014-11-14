@@ -535,12 +535,13 @@ mfsroot: install prune config genkeys customfiles boot compress-usr packages ins
 mfsroot: install prune config genkeys customfiles boot compress-usr packages ${WRKDIR}/.mfsroot_done
 .endif
 ${WRKDIR}/.mfsroot_done:
-	@echo -n "Creating and compressing mfsroot ..."
-	${_v}${MKDIR} ${WRKDIR}/mnt
-	${_v}${MAKEFS} -t ffs -m ${MFSROOT_MAXSIZE} -f ${MFSROOT_FREE_INODES} -b ${MFSROOT_FREE_BLOCKS} ${WRKDIR}/disk/mfsroot ${_ROOTDIR} > /dev/null
-	${_v}${RM} -rf ${WRKDIR}/mnt
-	${_v}${GZIP} -9 -f ${WRKDIR}/disk/mfsroot
-	${_v}${GZIP} -9 -f ${WRKDIR}/disk/boot/kernel/kernel
+	@echo "Creating and compressing mfsroot ..."
+	${MKDIR} ${WRKDIR}/mnt
+	${MAKEFS} -t ffs -m ${MFSROOT_MAXSIZE} -f ${MFSROOT_FREE_INODES} -b ${MFSROOT_FREE_BLOCKS} ${WRKDIR}/disk/mfsroot ${_ROOTDIR}
+	${GZIP} -9 -f ${WRKDIR}/disk/mfsroot
+	if [ ! -f ${WRKDIR}/disk/boot/kernel/kernel.gz ]; then \
+	    ${GZIP} -9 -f ${WRKDIR}/disk/boot/kernel/kernel; \
+	fi
 	${_v}if [ -f "${CFGDIR}/loader.conf" ]; then \
 		${INSTALL} -m 0644 ${CFGDIR}/loader.conf ${WRKDIR}/disk/boot/loader.conf; \
 	else \
