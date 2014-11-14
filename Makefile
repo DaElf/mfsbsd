@@ -215,8 +215,9 @@ ${WRKDIR}/.extract_done:
 	${_v}${TOUCH} ${WRKDIR}/.extract_done
 
 ${_DESTDIR}/isi-etc:
-	mv ${_DESTDIR}/etc ${_DESTDIR}/isi-etc
-	${TAR} -xpf fbsd10-etc.tgz -C ${_ROOTDIR}
+	touch ${_DESTDIR}/isi-etc
+#	mv ${_DESTDIR}/etc ${_DESTDIR}/isi-etc
+#	${TAR} -xpf fbsd10-etc.tgz -C ${_ROOTDIR}
 
 build: extract ${WRKDIR}/.build_done
 ${WRKDIR}/.build_done:
