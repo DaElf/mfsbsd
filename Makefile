@@ -462,7 +462,8 @@ ${WRKDIR}/.compress-usr_done:
 .if !defined(ROOTHACK)
 	@echo "Compressing usr ..."
 	${TAR} -c -C ${_DESTDIR} -f ${_DESTDIR}/.usr.tar usr
-	${XZ} ${_DESTDIR}/.usr.tar
+	#${XZ} ${_DESTDIR}/.usr.tar
+	${GZIP} ${_DESTDIR}/.usr.tar
 	${_v}${RM} -rf ${_DESTDIR}/usr && ${MKDIR} ${_DESTDIR}/usr 
 .else
 	@echo -n "Compressing root ..."
