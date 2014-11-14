@@ -356,7 +356,7 @@ packages: install prune ${WRKDIR}/.packages_done
 ${WRKDIR}/.packages_done:
 	${CP} /etc/resolv.conf ${_DESTDIR}/etc/resolv.conf
 .for _pkg in ${PACKAGES}
-	${PKG} -c ${_DESTDIR} install -y ${_pkg}
+	-${PKG} -c ${_DESTDIR} install -y ${_pkg}
 .endfor
 	${TOUCH} ${WRKDIR}/.packages_done
 	${RM} ${_DESTDIR}/etc/resolv.conf
