@@ -215,9 +215,13 @@ ${WRKDIR}/.extract_done:
 	${_v}${TOUCH} ${WRKDIR}/.extract_done
 
 ${_DESTDIR}/isi-etc:
-	touch ${_DESTDIR}/isi-etc
-#	mv ${_DESTDIR}/etc ${_DESTDIR}/isi-etc
-#	${TAR} -xpf fbsd10-etc.tgz -C ${_ROOTDIR}
+	#touch ${_DESTDIR}/isi-etc
+	mv ${_DESTDIR}/etc ${_DESTDIR}/isi-etc
+	${TAR} -xpf fbsd10-etc.tgz -C ${_ROOTDIR}
+	cd ${_ROOTDIR}/etc; ln -s ../isi-etc/gconfig .; ln -s ../isi-etc/mcp .
+# This is a bit of hack to add here but keep the isi stuff together
+	${MKDIR} ${_DESTDIR}/root/bin
+	${INSTALL} ${TOOLSDIR}/onefs_image_simple.sh ${_DESTDIR}/root/bin
 
 build: extract ${WRKDIR}/.build_done
 ${WRKDIR}/.build_done:
