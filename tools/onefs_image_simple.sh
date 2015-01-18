@@ -8,7 +8,7 @@ python -c "import isi.sys.bootdisk as bootdisk; bootdisk.unlock_bootdisks();"
 
 if [ -z $1]; then
     #image='http://buildbiox.west.isilon.com/snapshots/latest.BR_RIPT_BSD10/obj.DEBUG/install.tar.gz'
-    image='http://buildbiox.west.isilon.com/snapshots/b.11124/obj.DEBUG/install.tar.gz'
+    image='http://buildbiox.west.isilon.com/snapshots/latest.HEAD/obj.DEBUG/install.tar.gz'
 else
     image=$1
 fi
@@ -31,7 +31,8 @@ done
 
 size=`gpart show ada0 | head -1 | awk '{print $3}'`
 
-disks="ada0 ada1"
+#disks="ada0 ada1"
+disks="ada0"
 
 for d in ${disks}; do
     gpart destroy -F $d || true
@@ -91,7 +92,7 @@ restore_important_stuff() {
 }
 			
 partition_disk "ada0" $size
-partition_disk "ada1" $size
+#partition_disk "ada1" $size
 
 gpart set -a bootme -i 4 $disk
 
