@@ -7,7 +7,11 @@
 #
 
 # Include any isi config overrides
-.sinclude "config.isi.mk"
+.if defined(ISI)
+.include "config.isi.mk"
+.else
+.sinclude "config.freebsd.mk"
+.endif
 
 #
 # User-defined variables
@@ -218,13 +222,13 @@ ${WRKDIR}/.extract_done:
 
 ${_DESTDIR}/isi-etc:
 .if defined(ISI)
-	#touch ${_DESTDIR}/isi-etc
 	mv ${_DESTDIR}/etc ${_DESTDIR}/isi-etc
 	${TAR} -xpf fbsd10-etc.tgz -C ${_ROOTDIR}
-	cd ${_ROOTDIR}/etc; ln -s ../isi-etc/gconfig .; ln -s ../isi-etc/mcp .
+.for _ln in gconfig mcp ifs
+	cd ${_ROOTDIR}/etc; ln -s ../isi-etc/${_ln} .
+.endfor
 # This is a bit of hack to add here but keep the isi stuff together
 	${MKDIR} ${_DESTDIR}/root/bin
-
 .endif
 
 build: extract ${WRKDIR}/.build_done
