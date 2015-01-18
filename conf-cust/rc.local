@@ -1,0 +1,6 @@
+# sample rc.local
+# add your code below
+echo "fetching the zfsinstall_build_server install script"
+echo "Install you system by running: sh /root/zfsinstall_build_server"
+fetch -o /root/zfsinstall_build_server http://cribsbiox.west.isilon.com/mirror/tools/bsd_build/build_server_freebsd_10/zfsinstall_build_server
+
