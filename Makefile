@@ -358,7 +358,7 @@ ${WRKDIR}/.packages_done_old:
 	${_v}${TOUCH} ${WRKDIR}/.packages_done
 
 
-PACKAGES= \
+PACKAGES?= \
 	rsync
 
 ABI=freebsd:10:x86:64
