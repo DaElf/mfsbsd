@@ -94,7 +94,7 @@ restore_important_stuff() {
 partition_disk "ada0" $size
 #partition_disk "ada1" $size
 
-gpart set -a bootme -i 4 $disk
+gpart set -a bootme -i 4 ada0
 
 make_mirror() {
 
