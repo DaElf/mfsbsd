@@ -5,6 +5,7 @@ ISI=
 BRANCH?=		BR_RIPT_BSD10_MFSBSD
 
 PART_TYPE=		gpt
+CUST_CFG=		conf-isi
 WRKDIR=			${.CURDIR}/tmp
 BASE=			${WRKDIR}
 BASEFILE=		${.CURDIR}/install.tar.gz
