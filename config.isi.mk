@@ -1,6 +1,7 @@
 # Our images are fat
 MFSROOT_MAXSIZE=	512m
 
+ISI=
 BRANCH?=		BR_RIPT_BSD10
 
 WRKDIR=			${.CURDIR}/tmp
@@ -40,3 +41,5 @@ F=${.CURDIR}/../mfsbsd/${KERN_TAR}
 e:
 	@echo "${KERN_TAR:R}"
 	@echo "${F:tA}"
+
+.sinclude "pxe.isi.mk"
