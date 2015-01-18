@@ -36,6 +36,7 @@ MFSROOT_MAXSIZE?=80m
 #
 SRC_DIR?=/usr/src
 CFGDIR?=conf
+CUST_CFG?=	conf-cust
 SCRIPTSDIR=scripts
 PACKAGESDIR?=packages
 CUSTOMFILESDIR=customfiles
@@ -394,7 +395,10 @@ ${WRKDIR}/.config_done:
 		${INSTALL} -m 0744 ${CFGDIR}/rc.local ${_DESTDIR}/etc/rc.local; \
 	elif [ ! -f "${_DESTDIR}/etc/rc.local" ]; then \
 		${INSTALL} -m 0744 ${CFGDIR}/rc.local.sample ${_DESTDIR}/etc/rc.local; \
-   fi
+	fi
+	if [ -f "${CUST_CFG}/rc.conf" ]; then \
+		${INSTALL} -m 0744 ${CUST_CFG}/rc.conf ${_DESTDIR}/etc/rc.conf; \
+	fi
 .for FILE in rc.conf ttys
 	${_v}if [ -f "${CFGDIR}/${FILE}" ]; then \
 		${INSTALL} -m 0644 ${CFGDIR}/${FILE} ${_DESTDIR}/etc/${FILE}; \
