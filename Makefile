@@ -90,6 +90,7 @@ MFSMODULES?=	geom_mirror geom_nop opensolaris zfs ext2fs snp smbus ipmi ntfs nul
 BOOTFILES?=	boot *boot mbr pmbr defaults loader zfsloader loader.help *.rc *.4th device.hints
 MFSMODULES+=	if_cxgb if_cxgbe if_igb if_ixg
 #
+KERNDIR?=	kernel
 
 .if defined(V)
 _v=
