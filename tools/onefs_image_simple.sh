@@ -2,7 +2,11 @@
 set -e
 
 find / -name \*.core -print -exec rm {} \;
-(cd /etc; ln -fs ../isi-etc/gconfig .; ln -fs ../isi-etc/mcp .)
+(cd /etc; \
+	ln -fs ../isi-etc/gconfig . ; \
+	ln -fs ../isi-etc/mcp .     ; \
+	ln -fs ../isi-etc/ifs .     ; \
+)
 
 python -c "import isi.sys.bootdisk as bootdisk; bootdisk.unlock_bootdisks();"
 
