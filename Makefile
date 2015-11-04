@@ -158,7 +158,7 @@ KERNELFILE?=	${BASE}/kernel.txz
 _MAKEJOBS=	-j${MAKEJOBS}
 .endif
 
-_ROOTDIR=	${WRKDIR}/freebsd
+_ROOTDIR=	${WRKDIR}/mfs
 _BOOTDIR=	${_ROOTDIR}/boot
 .if defined(ROOTHACK)
 _DESTDIR=	${_ROOTDIR}/rw
@@ -193,12 +193,12 @@ all: image
 
 destdir: ${_DESTDIR} ${_BOOTDIR}
 ${_DESTDIR}:
-	${MKDIR} ${_DESTDIR}
-	${CHOWN} root:wheel ${_DESTDIR}
+	${_v}${MKDIR} ${_DESTDIR}
+	${_v}${CHOWN} root:wheel ${_DESTDIR}
 
 ${_BOOTDIR}:
-	${MKDIR} ${_BOOTDIR}/kernel ${_BOOTDIR}/modules
-	${CHOWN} -R root:wheel ${_BOOTDIR}
+	${_v}${MKDIR} ${_BOOTDIR}/kernel ${_BOOTDIR}/modules
+	${_v}${CHOWN} -R root:wheel ${_BOOTDIR}
 
 extract: destdir ${BASEFILE} ${WRKDIR}/.extract_done ${_DESTDIR}/isi-etc
 ${WRKDIR}/.extract_done:
@@ -213,7 +213,7 @@ ${WRKDIR}/.extract_done:
 	fi
 	@echo "Extracting base and kernel ..."
 	${_v}${TAR} --unlink -xpf ${BASEFILE} ${DO_PRUNE} -C ${_DESTDIR}
-	if [ -f ${KERNELFILE} ]; then \
+	${_v}if [ -f ${KERNELFILE} ]; then \
 		${TAR} --unlink -xpf ${KERNELFILE} -C ${_ROOTDIR}; \
 	fi
 	@echo " done"
@@ -222,13 +222,13 @@ ${WRKDIR}/.extract_done:
 
 ${_DESTDIR}/isi-etc:
 .if defined(ISI)
-	mv ${_DESTDIR}/etc ${_DESTDIR}/isi-etc
-	${TAR} -xpf fbsd10-etc.tgz -C ${_ROOTDIR}
+	${_v}${MV} ${_DESTDIR}/etc ${_DESTDIR}/isi-etc
+	${_v}${TAR} -xpf fbsd10-etc.tgz -C ${_ROOTDIR}
 .for _ln in gconfig mcp ifs
-	cd ${_ROOTDIR}/etc; ln -s ../isi-etc/${_ln} .
+	${_v}cd ${_ROOTDIR}/etc; ln -s ../isi-etc/${_ln} .
 .endfor
 # This is a bit of hack to add here but keep the isi stuff together
-	${MKDIR} ${_DESTDIR}/root/bin
+	${_v}${MKDIR} ${_DESTDIR}/root/bin
 .endif
 
 build: extract ${WRKDIR}/.build_done
@@ -262,22 +262,22 @@ ${WRKDIR}/.install_done:
 . endif
 	${_v}${MKDIR} ${_DISTDIR}
 . if defined(ROOTHACK)
-	${CP} -rp ${_BOOTDIR}/${KERNDIR}/* ${_DESTDIR}/boot/kernel/*
+	${_v}${CP} -rp ${_BOOTDIR}/${KERNDIR}/* ${_DESTDIR}/boot/kernel/*
 . endif
 . if !defined(CUSTOM) && exists(${BASE}/base.txz) && exists(${BASE}/kernel.txz)
 	${_v}${CP} ${BASE}/base.txz ${_DISTDIR}/base.txz
 	${_v}${CP} ${BASE}/kernel.txz ${_DISTDIR}/kernel.txz
 . else
-	${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} --exclude "boot/${KERNDIR}/*" -f ${_DISTDIR}/base.txz .
+	${_v}${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} --exclude "boot/${KERNDIR}/*" -f ${_DISTDIR}/base.txz .
 	# This line is probably wrong 
-	${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} -f ${_DISTDIR}/kernel.txz boot/kernel
+	${_v}${TAR} -c -C ${_DESTDIR} -J ${EXCLUDE} -f ${_DISTDIR}/kernel.txz boot/kernel
 . endif
 	@echo " done"
 . if defined(ROOTHACK)
-	${RM} -rf ${_DESTDIR}/boot/${KERNDIR}
+	${_v}${RM} -rf ${_DESTDIR}/boot/${KERNDIR}
 . endif
 .endif
-	${_v}${CHFLAGS} -R noschg ${_DESTDIR} > /dev/null 2> /dev/null || exit 0
+	${_v}-${CHFLAGS} -R noschg ${_DESTDIR}
 .if !defined(WITHOUT_RESCUE) && defined(RESCUE_LINKS)
 	${_v}cd ${_DESTDIR} && \
 	for FILE in `${FIND} rescue -type f`; do \
@@ -322,7 +322,6 @@ ${WRKDIR}/.prune_done:
 
 packages_old: install prune ${WRKDIR}/.packages_done_old
 ${WRKDIR}/.packages_done_old:
-.if defined(PKGNG)
 	@echo -n "Installing pkgng ..."
 .  if !exists(${PKG_STATIC})
 	@echo "pkg-static not found at: ${PKG_STATIC}"
@@ -332,17 +331,13 @@ ${WRKDIR}/.packages_done_old:
 	${_v}${INSTALL} -o root -g wheel -m 0755 ${PKG_STATIC} ${_DESTDIR}/usr/local/sbin/
 	${_v}${LN} -sf pkg-static ${_DESTDIR}/usr/local/sbin/pkg
 	@echo " done"
-.endif
-	@if [ -d "${PACKAGESDIR}" ]; then \
-		echo -n "Copying user packages ${PACKAGESDIR} -> ${_DESTDIR}"; \
+	${_v}if [ -d "${PACKAGESDIR}" ]; then \
+		echo -n "Copying user packages ..."; \
 		${CP} -rf ${PACKAGESDIR} ${_DESTDIR}; \
 		echo " done"; \
 	fi
-.if defined(PKGNG)
 	${_v}if [ -d "${_DESTDIR}/packages" ]; then \
-		cd ${_DESTDIR}/packages && for FILE in *; do \
 		echo -n "Installing user packages ..."; \
-		done; \
 	fi
 	${_v}if [ -d "${_DESTDIR}/packages" ]; then \
                 cd ${_DESTDIR}/packages && for _FILE in *; do \
@@ -350,13 +345,11 @@ ${WRKDIR}/.packages_done_old:
                 done; \
                 ${PKG} -c ${_DESTDIR} add -M $${_FILES}; \
 	fi
-.endif
 	${_v}if [ -d "${_DESTDIR}/packages" ]; then \
 		${RM} -rf ${_DESTDIR}/packages; \
 		echo " done"; \
 	fi
 	${_v}${TOUCH} ${WRKDIR}/.packages_done
-
 
 PACKAGES?= \
 	rsync
@@ -457,11 +450,11 @@ ${WRKDIR}/.config_done:
 
 genkeys: config ${WRKDIR}/.genkeys_done
 ${WRKDIR}/.genkeys_done:
-	@echo "Generating SSH host keys ..."
-	${SSHKEYGEN} -t rsa1 -b 1024 -f ${_DESTDIR}/etc/ssh/ssh_host_key -N ''
-	${SSHKEYGEN} -t dsa -f ${_DESTDIR}/etc/ssh/ssh_host_dsa_key -N ''
-	${SSHKEYGEN} -t rsa -f ${_DESTDIR}/etc/ssh/ssh_host_rsa_key -N ''
-	${TOUCH} ${WRKDIR}/.genkeys_done
+	@echo -n "Generating SSH host keys ..."
+	${_v}${SSHKEYGEN} -t rsa1 -b 1024 -f ${_DESTDIR}/etc/ssh/ssh_host_key -N ''
+	${_v}${SSHKEYGEN} -t dsa -f ${_DESTDIR}/etc/ssh/ssh_host_dsa_key -N ''
+	${_v}${SSHKEYGEN} -t rsa -f ${_DESTDIR}/etc/ssh/ssh_host_rsa_key -N ''
+	${_v}${TOUCH} ${WRKDIR}/.genkeys_done
 	@echo " done"
 
 customfiles: config ${WRKDIR}/.customfiles_done
@@ -476,10 +469,10 @@ ${WRKDIR}/.customfiles_done:
 compress-usr: install prune config genkeys customfiles boot packages ${WRKDIR}/.compress-usr_done
 ${WRKDIR}/.compress-usr_done:
 .if !defined(ROOTHACK)
-	@echo "Compressing usr ..."
-	${TAR} -c -C ${_DESTDIR} -f ${_DESTDIR}/.usr.tar usr
-	#${XZ} ${_DESTDIR}/.usr.tar
-	${GZIP} ${_DESTDIR}/.usr.tar
+	@echo -n "Compressing usr ..."
+	${_v}${TAR} -c -C ${_DESTDIR} -f ${_DESTDIR}/.usr.tar usr
+	#${_v}${XZ} ${_DESTDIR}/.usr.tar
+	${_v}${GZIP} ${_DESTDIR}/.usr.tar
 	${_v}${RM} -rf ${_DESTDIR}/usr && ${MKDIR} ${_DESTDIR}/usr 
 .else
 	@echo -n "Compressing root ..."
@@ -507,43 +500,44 @@ ${WRKDIR}/.install-roothack_done:
 
 boot: install prune ${WRKDIR}/.boot_done
 ${WRKDIR}/.boot_done:
-	@echo "Configuring boot environment ..."
-	${MKDIR} -p ${WRKDIR}/disk/boot/kernel && ${CHOWN} root:wheel ${WRKDIR}/disk
-	${TAR} -cf -  -X ${KERN_EXCLUDE} -C ${_BOOTDIR}/${KERNDIR} . | ${TAR} -xvf - -C ${WRKDIR}/disk/boot/kernel
+	@echo -n "Configuring boot environment ..."
+	${_v}${MKDIR} -p ${WRKDIR}/disk/boot/kernel
+	${_v}${CHOWN} root:wheel ${WRKDIR}/disk
+	${_v}${TAR} -cf -  -X ${KERN_EXCLUDE} -C ${_BOOTDIR}/${KERNDIR} . | ${TAR} -xvf - -C ${WRKDIR}/disk/boot/kernel
 	${_v}${CP} -rp ${_DESTDIR}/boot.config ${WRKDIR}/disk
 .for FILE in ${BOOTFILES}
 	-${CP} -rp ${_DESTDIR}/boot/${FILE} ${WRKDIR}/disk/boot
 .endfor
 .if defined(DEBUG)
-	${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/kernel.symbols ${WRKDIR}/disk/boot/kernel
+	${_v}-${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/kernel.symbols ${WRKDIR}/disk/boot/kernel
 .endif
 	# Install modules need to boot into the kernel directory
-	${FIND} ${_BOOTDIR}/${KERNDIR} -name 'acpi*.ko' -exec ${INSTALL} -m 0555 {} ${WRKDIR}/disk/boot/kernel \;
+	${_v}${FIND} ${_BOOTDIR}/${KERNDIR} -name 'acpi*.ko' -exec ${INSTALL} -m 0555 {} ${WRKDIR}/disk/boot/kernel \;
 .for FILE in ${BOOTMODULES}
-	[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ] || \
+	${_v}[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ] || \
 		${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ${WRKDIR}/disk/boot/kernel
 . if defined(DEBUG)
-	[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ] || \
+	${_v}[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ] || \
 		${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ${WRKDIR}/disk/boot/kernel
 . endif
 .endfor
 	${_v}${MKDIR} -p ${_DESTDIR}/boot/modules
 .for FILE in ${MFSMODULES}
-	[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ] || \
+	${_v}[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ] || \
 		${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko ${_DESTDIR}/boot/modules
 . if defined(DEBUG)
-	[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ] || \
+	${_v}[ ! -f ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ] || \
 		${INSTALL} -m 0555 ${_BOOTDIR}/${KERNDIR}/${FILE}.ko.symbols ${_DESTDIR}/boot/modules
 . endif
 .endfor
 .if defined(ROOTHACK)
-	@echo "Installing tmpfs module for roothack ..."
-	${MKDIR} -p ${_ROOTDIR}/boot/modules
-	${INSTALL} -m 0666 ${_BOOTDIR}/${KERNDIR}/tmpfs.ko ${_ROOTDIR}/boot/modules
+	@echo -n "Installing tmpfs module for roothack ..."
+	${_v}${MKDIR} -p ${_ROOTDIR}/boot/modules
+	${_v}${INSTALL} -m 0666 ${_BOOTDIR}/${KERNDIR}/tmpfs.ko ${_ROOTDIR}/boot/modules
 	@echo " done"
 .endif
-	${RM} -rf ${_BOOTDIR}/${KERNDIR} ${_BOOTDIR}/*.symbols
-	${TOUCH} ${WRKDIR}/.boot_done
+	${_v}${RM} -rf ${_BOOTDIR}/${KERNDIR} ${_BOOTDIR}/*.symbols
+	${_v}${TOUCH} ${WRKDIR}/.boot_done
 	@echo " done"
 
 .if defined(ROOTHACK)
@@ -552,11 +546,12 @@ mfsroot: install prune config genkeys customfiles boot compress-usr packages ins
 mfsroot: install prune config genkeys customfiles boot compress-usr packages ${WRKDIR}/.mfsroot_done
 .endif
 ${WRKDIR}/.mfsroot_done:
-	@echo "Creating and compressing mfsroot ..."
-	${MKDIR} ${WRKDIR}/mnt
-	${MAKEFS} -t ffs -m ${MFSROOT_MAXSIZE} -f ${MFSROOT_FREE_INODES} -b ${MFSROOT_FREE_BLOCKS} ${WRKDIR}/disk/mfsroot ${_ROOTDIR}
-	${GZIP} -9 -f ${WRKDIR}/disk/mfsroot
-	if [ ! -f ${WRKDIR}/disk/boot/kernel/kernel.gz ]; then \
+	@echo -n "Creating and compressing mfsroot ..."
+	${_v}${MKDIR} ${WRKDIR}/mnt
+	${_v}${MAKEFS} -t ffs -m ${MFSROOT_MAXSIZE} -f ${MFSROOT_FREE_INODES} -b ${MFSROOT_FREE_BLOCKS} ${WRKDIR}/disk/mfsroot ${_ROOTDIR}
+	${_v}${RM} -rf ${WRKDIR}/mnt
+	${_v}${GZIP} -9 -f ${WRKDIR}/disk/mfsroot
+	${_v}if [ ! -f ${WRKDIR}/disk/boot/kernel/kernel.gz ]; then \
 	    ${GZIP} -9 -f ${WRKDIR}/disk/boot/kernel/kernel; \
 	fi
 	${_v}if [ -f "${CFGDIR}/loader.conf" ]; then \
